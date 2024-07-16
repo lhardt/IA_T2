@@ -44,6 +44,19 @@ class ValueIterationAgent(ValueEstimationAgent):
 
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
+        allStates = self.mdp.getStates()
+        
+        for state in allStates:
+            self.values[state] = 0.0
+        
+        #     
+        for i_iter in range(iterations):
+            nextValues = util.Counter()
+            
+            for state in allStates:
+                action,score = self.computeActionsAndScoreFromValues(state)
+                nextValues[state] = score
+            self.values = nextValues
 
 
     def getValue(self, state):
@@ -58,7 +71,31 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        actionScore = 0
+        statesProbs = self.mdp.getTransitionStatesAndProbs(state, action)
+        for (nextState, prob) in statesProbs:
+            actionScore += prob * self.discount * self.getValue(nextState)
+            actionScore += prob * self.mdp.getReward(state, action, nextState)
+
+        return actionScore
+        # util.raiseNotDefined()
+    
+    def computeActionsAndScoreFromValues(self,state):
+        possibleActions = self.mdp.getPossibleActions(state)
+        takenAction = None
+        takenActionScore = None
+        if len(possibleActions) == 0: 
+            return (None, 0)
+            
+        for action in possibleActions: 
+            actionScore = self.computeQValueFromValues(state, action)
+
+            if takenAction is None or actionScore > takenActionScore:
+                takenAction = action
+                takenActionScore = actionScore
+        
+        return (takenAction, takenActionScore)
+        
 
     def computeActionFromValues(self, state):
         """
@@ -70,7 +107,10 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        actionValue = self.computeActionsAndScoreFromValues(state)
+        return actionValue[0] 
+              
+        # util.raiseNotDefined()
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
