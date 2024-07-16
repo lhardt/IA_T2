@@ -49,8 +49,8 @@ class ValueIterationAgent(ValueEstimationAgent):
         for state in allStates:
             self.values[state] = 0.0
         
-        #     
         for i_iter in range(iterations):
+            # Next iteration's values
             nextValues = util.Counter()
             
             for state in allStates:
@@ -78,14 +78,11 @@ class ValueIterationAgent(ValueEstimationAgent):
             actionScore += prob * self.mdp.getReward(state, action, nextState)
 
         return actionScore
-        # util.raiseNotDefined()
     
     def computeActionsAndScoreFromValues(self,state):
         possibleActions = self.mdp.getPossibleActions(state)
         takenAction = None
-        takenActionScore = None
-        if len(possibleActions) == 0: 
-            return (None, 0)
+        takenActionScore = 0.0
             
         for action in possibleActions: 
             actionScore = self.computeQValueFromValues(state, action)
@@ -107,8 +104,8 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
-        actionValue = self.computeActionsAndScoreFromValues(state)
-        return actionValue[0] 
+        action,value = self.computeActionsAndScoreFromValues(state)
+        return action 
               
         # util.raiseNotDefined()
 
