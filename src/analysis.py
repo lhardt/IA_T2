@@ -20,8 +20,10 @@
 # value iteration.
 
 def question2():
+    # Without noise, the agent goes perfectly to the 
+    # other side of the bridge.
     answerDiscount = 0.9
-    answerNoise = 0.2
+    answerNoise = 0.0 
     return answerDiscount, answerNoise
 
 if __name__ == '__main__':
