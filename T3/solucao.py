@@ -42,6 +42,16 @@ LEFT = "esquerda"
 RIGHT= "direita"
 GOAL = "12345678_"
 
+def oppositeDir(dir):
+    if dir == UP:
+        return DOWN
+    if dir == DOWN:
+        return UP
+    if dir == LEFT:
+        return RIGHT
+    if dir == RIGHT:
+        return LEFT
+
 def getNeighbours(stringPos):
     #  | 0 1 2 |
     #  | 3 4 5 |
@@ -136,6 +146,7 @@ def astar(estado:str, heuristicFunc)->list[str]:
     frontier.put(( 
         heuristicFunc(estado, FINAL) ,   Nodo(estado, None, None, heuristicFunc(estado, FINAL) ) 
     ))
+    n_visited = 1
     
     finalNode = None
     while not frontier.empty() :
@@ -156,7 +167,7 @@ def astar(estado:str, heuristicFunc)->list[str]:
             
             if neigh.estado not in explored:     
                 frontier.put((neigh.getTotalHeuristic(), neigh))
-        
+                n_visited += 1
     actions = []
     while finalNode != None and finalNode.acao != None:
         actions = [finalNode.acao] + actions
@@ -164,6 +175,8 @@ def astar(estado:str, heuristicFunc)->list[str]:
           
     if len(actions) == 0:
         actions = None
+        
+    print("N_Visited: " + str(n_visited))
     return actions
 
 def astar_hamming(estado:str)->list[str]:
@@ -205,6 +218,7 @@ def bfs(estado:str)->list[str]:
     explored = set()
     frontier = Queue()
     frontier.put((0,   Nodo(estado, None, None, 0)))
+    n_visited = 1
     
     finalNode = None
     while not frontier.empty() :
@@ -224,6 +238,7 @@ def bfs(estado:str)->list[str]:
             
             if neigh.estado not in explored:     
                 frontier.put((neigh.custo, neigh))
+                n_visited += 1
         
     actions = []
     while finalNode != None and finalNode.acao != None:
@@ -232,6 +247,8 @@ def bfs(estado:str)->list[str]:
           
     if len(actions) == 0:
         actions = None
+        
+    print("N_Visited: ", str(n_visited))
     return actions
 
 #opcional,extra
@@ -274,6 +291,77 @@ def astar_new_heuristic(estado:str)->list[str]:
     :param estado: str
     :return:
     """
-    # Comparing the position of the slot with the final position. Closer is better.
+    # comparing the position of the slot with the final position. Closer is better.
     return astar(estado, (lambda e1, e2 : 10 - e1.find("_"))) 
 
+def bfs_mitm(estado:str)->list[str]:
+    # Técnica Meet-In-The-Middle : Duas BFSs
+    FINAL = "12345678_"
+    explored_st  = dict()
+    explored_end = dict()
+    frontier_st = Queue()
+    frontier_end = Queue()
+    frontier_st.put((0,   Nodo(estado, None, None, 0)))
+    frontier_end.put((0,   Nodo( FINAL, None, None, 0)))
+    n_visited = 2
+    
+    finalNode = None
+    while finalNode is None:
+        # Processing start 
+        item = frontier_st.get()
+        currNode = item[1]
+        
+        if currNode in explored_st:
+            continue
+        if currNode.estado in explored_end:
+            finalNode = (currNode, explored_end[currNode.estado])
+            break
+
+        explored_st[currNode.estado] = currNode
+        
+        neighbours = expande(currNode)
+        for neigh in neighbours:
+            
+            if neigh.estado not in explored_st:     
+                frontier_st.put((neigh.custo, neigh))
+                n_visited += 1
+
+        # Processing end
+        item = frontier_end.get()
+        currNode = item[1]
+        
+        if currNode in explored_end:
+            continue
+        if currNode.estado in explored_st:
+            finalNode = (explored_st[currNode.estado], currNode)
+            break
+
+        explored_end[currNode.estado] = currNode
+        
+        neighbours = expande(currNode)
+        for neigh in neighbours:
+            
+            if neigh.estado not in explored_end:
+                frontier_end.put((neigh.custo, neigh))
+                n_visited += 1
+        
+    actions = []
+    finalNodeSt = finalNode[0]
+    finalNodeEnd = finalNode[1]
+
+    while finalNodeSt != None and finalNodeSt.acao != None:
+        actions = [finalNodeSt.acao] + actions
+        finalNodeSt = finalNodeSt.pai
+
+    while finalNodeEnd != None and finalNodeEnd.acao != None:
+        actions = actions + [oppositeDir(finalNodeEnd.acao)]
+        finalNodeEnd = finalNodeEnd.pai
+          
+    if len(actions) == 0:
+        actions = None
+        
+    print("N_Visited: ", str(n_visited))
+    return actions
+
+
+print( len(astar_new_heuristic("2_3541687")) )
