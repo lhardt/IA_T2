@@ -49,4 +49,15 @@ def evaluate_mask(state, player:str) -> float:
     :param state: state to evaluate (instance of GameState)
     :param player: player to evaluate the state for (B or W)
     """
-    return 0   # substitua pelo seu codigo
+    board = state.board.tiles
+    opponent = Board.opponent(player)
+    player_score = 0
+    opponent_score = 0
+    for row_idx, row in enumerate(board):
+        for (col_idx, node) in enumerate(row):
+            score = EVAL_TEMPLATE[row_idx][col_idx]
+            if (node == player):
+                player_score += score
+            elif (node == opponent):
+                opponent_score += score
+    return player_score - opponent_score
